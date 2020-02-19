@@ -1,0 +1,14 @@
+#ifndef ${package_name_capital}_${module_name_capital}_${file_name_capital}_H_
+#define ${package_name_capital}_${module_name_capital}_${file_name_capital}_H_
+
+#include <memory>
+
+namespace ${package_name_original}
+{
+namespace ${module_name_original}
+{
+// ... your code
+
+} // namespace ${module_name_original}
+} // namespace ${package_name_original}
+#endif // ${module_name_capital}_${file_name_capital}_H_

@@ -1,0 +1,3 @@
+#include "${package_name_original}/${module_name_original}/${file_name_original}.h"
+#include <gtest/gtest.h>
+
