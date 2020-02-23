@@ -17,7 +17,7 @@ git clone https://github.com/rise-lab-skku/src_generate_script.git "${HOME}/.cus
 
 1. Make alias in your shell initializing script. For example, 
 ```
-echo "alias source ${HOME}/.custom_tools/psrcgen/psrcgen.sh psrcgen" >> ${HOME}/.zshrc
+echo "alias psrcgen=\"source ${HOME}/.custom_tools/psrcgen/psrcgen.sh\"" >> ${HOME}/.zshrc
 ```
 
 ## Usage
