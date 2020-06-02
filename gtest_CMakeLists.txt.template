@@ -1,0 +1,10 @@
+file(GLOB test_src "*.cpp")
+set(test_name "${module_name_original}")
+add_executable(${test_name}_test ${test_src})
+add_dependencies(${test_name}_test ${test_name})
+target_link_libraries(${test_name}_test 
+    ${test_name}
+    ${GTEST_LIBRARIES}
+    ${GTEST_MAIN_LIBRARIES}
+    pthread
+)

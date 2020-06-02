@@ -1,10 +1,12 @@
-# function definitions
-function git_root_dir(){
-    echo $(git rev-parse --show-toplevel)
+
+# get current dir
+function cur_dir() {
+  echo $(pwd)
 }
 
-function cur_dir(){
-    echo $(pwd)
+# find git root dir
+function git_root_dir() {
+  echo $(git rev-parse --show-toplevel)
 }
 
 # read arguments
@@ -27,19 +29,34 @@ test_dir=${git_root}/test/${package_name_original}/${module_name_original}
 # generate year
 YEAR=$(date +%Y)
 
-# Create top level CMakeLists.txt file if the files does not exists.
-if [ ! -f "${git_root}/CMakeLists.txt" ]; then
-  sed \
-  -e "s/\${module_name_capital}/${module_name_capital}/" \
-  -e "s/\${module_name_original}/${module_name_original}/" \
-  -e "s/\${file_name_original}/${file_name_original}/" \
-  -e "s/\${file_name_capital}/${file_name_capital}/" \
-  -e "s/\${package_name_original}/${package_name_original}/" \
-  -e "s/\${package_name_capital}/${package_name_capital}/" \
-  -e "s/\${year}/${YEAR}/" \
-  ${BASEDIR}/CMakeLists.txt.template > ${git_root}/CMakeLists.txt
-fi
+# create file from template. if the file exists, do nothing.
+# Usage: create_from_template <template filename> <output path>
+function create_from_template() {
+  if [ ! -f "${out}" ]; then
+    sed \
+      -e "s/\${module_name_capital}/${module_name_capital}/" \
+      -e "s/\${module_name_original}/${module_name_original}/" \
+      -e "s/\${file_name_original}/${file_name_original}/" \
+      -e "s/\${file_name_capital}/${file_name_capital}/" \
+      -e "s/\${package_name_original}/${package_name_original}/" \
+      -e "s/\${package_name_capital}/${package_name_capital}/" \
+      -e "s/\${year}/${YEAR}/" \
+      "${BASEDIR}/$1" >"$2"
+  fi
+}
+# check if this directory is under catkin workspace.
+# this function uses CATKIN_WS env variable. you have to set manually.
+function check_catkin() {
+  local ret=0
+  if [[ $(git_root_dir) == *${CATKIN_WS}* ]]; then
+    ret=1
+  fi
+  echo $ret
+}
 
+
+# Create top level CMakeLists.txt file if the files does not exists.
+ret=$(create_from_template "CMakeLists.txt.template" "${git_root}/CMakeLists.txt")
 
 # Initialize include dir
 if [ ! -d "${git_root}/include" ]; then
@@ -64,7 +81,6 @@ if [ ! -f "${git_root}/test/CMakeLists.txt" ]; then
   touch "${git_root}/test/CMakeLists.txt"
 fi
 
-
 # Initialize header dir
 if [ ! -d "${header_dir}" ]; then
   mkdir -p ${header_dir}
@@ -76,7 +92,7 @@ if [ ! -d "${source_dir}" ]; then
 fi
 if [ ! -f "${source_dir}/CMakeLists.txt" ]; then
   touch "${source_dir}/CMakeLists.txt"
-  echo "add_subdirectory(${package_name_original}/${module_name_original})" >> "${git_root}/src/CMakeLists.txt"
+  echo "add_subdirectory(${package_name_original}/${module_name_original})" >>"${git_root}/src/CMakeLists.txt"
 fi
 
 # Initialize test dir
@@ -85,57 +101,18 @@ if [ ! -d "${test_dir}" ]; then
 fi
 if [ ! -f "${test_dir}/CMakeLists.txt" ]; then
   touch "${test_dir}/CMakeLists.txt"
-  echo "add_subdirectory(${package_name_original}/${module_name_original})" >> "${git_root}/test/CMakeLists.txt"
+  echo "add_subdirectory(${package_name_original}/${module_name_original})" >>"${git_root}/test/CMakeLists.txt"
 fi
-
 
 # Create *.cpp, *.h, *_test.cpp files if the files does not exists.
-if [ ! -f "${header_dir}/${file_name_original}.h" ]; then
-  sed \
-  -e "s/\${module_name_capital}/${module_name_capital}/" \
-  -e "s/\${module_name_original}/${module_name_original}/" \
-  -e "s/\${file_name_original}/${file_name_original}/" \
-  -e "s/\${file_name_capital}/${file_name_capital}/" \
-  -e "s/\${package_name_original}/${package_name_original}/" \
-  -e "s/\${package_name_capital}/${package_name_capital}/" \
-  -e "s/\${year}/${YEAR}/" \
-  ${BASEDIR}/header.template > ${header_dir}/${file_name_original}.h
+ret=$(create_from_template "header.template" "${header_dir}/${file_name_original}.h")
+ret=$(create_from_template "source.template" "${source_dir}/${file_name_original}.cpp")
+ret=$(create_from_template "gtest.template" "${test_dir}/${file_name_original}_test.cpp")
+
+# if this git repository is under catkin workspace, generate CMakeLists.txt file for catkin build system.
+# else, create normal gtest CMakeLists.txt.
+if [ $(check_catkin) -eq 1 ]; then
+  ret=$(create_from_template "catkin_gtest_CMakeLists.txt.template" "${test_dir}/CMakeLists.txt")
+else
+  ret=$(create_from_template "gtest_CMakeLists.txt.template" "${test_dir}/CMakeLists.txt")
 fi
-
-if [ ! -f "${source_dir}/${file_name_original}.cpp" ]; then
-  sed \
-  -e "s/\${module_name_capital}/${module_name_capital}/" \
-  -e "s/\${module_name_original}/${module_name_original}/" \
-  -e "s/\${file_name_original}/${file_name_original}/" \
-  -e "s/\${file_name_capital}/${file_name_capital}/" \
-  -e "s/\${package_name_original}/${package_name_original}/" \
-  -e "s/\${package_name_capital}/${package_name_capital}/" \
-  -e "s/\${year}/${YEAR}/" \
-  ${BASEDIR}/source.template > ${source_dir}/${file_name_original}.cpp
-fi
-
-if [ ! -f "${test_dir}/${file_name_original}_test.cpp" ]; then
-  sed \
-  -e "s/\${module_name_capital}/${module_name_capital}/" \
-  -e "s/\${module_name_original}/${module_name_original}/" \
-  -e "s/\${file_name_original}/${file_name_original}/" \
-  -e "s/\${file_name_capital}/${file_name_capital}/" \
-  -e "s/\${package_name_original}/${package_name_original}/" \
-  -e "s/\${package_name_capital}/${package_name_capital}/" \
-  -e "s/\${year}/${YEAR}/" \
-  ${BASEDIR}/gtest.template > ${test_dir}/${file_name_original}_test.cpp
-fi
-
-
-# deprecated. use libgtest_main.a
-# if [ ! -f "${test_dir}/${module_name_original}_gtest_main_test.cpp" ]; then
-#   sed \
-#   -e "s/\${module_name_capital}/${module_name_capital}/" \
-#   -e "s/\${module_name_original}/${module_name_original}/" \
-#   -e "s/\${file_name_original}/${file_name_original}/" \
-#   -e "s/\${file_name_capital}/${file_name_capital}/" \
-#   -e "s/\${package_name_original}/${package_name_original}/" \
-#   -e "s/\${package_name_capital}/${package_name_capital}/" \
-#   -e "s/\${year}/${YEAR}/" \
-#   ${BASEDIR}/gtest_main.template > ${test_dir}/${module_name_original}_test.cpp
-# fi
