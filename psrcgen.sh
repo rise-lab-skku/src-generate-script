@@ -32,6 +32,7 @@ YEAR=$(date +%Y)
 # create file from template. if the file exists, do nothing.
 # Usage: create_from_template <template filename> <output path>
 function create_from_template() {
+  set -C
   if [ ! -f "${out}" ]; then
     sed \
       -e "s/\${module_name_capital}/${module_name_capital}/" \
