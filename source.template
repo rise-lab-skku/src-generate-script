@@ -1,1 +1,7 @@
 #include "${package_name_original}/${module_name_original}/${file_name_original}.h"
+
+namespace ${package_name_original}{
+
+    // your code here ...
+    
+}// namespace ${package_name_original}
