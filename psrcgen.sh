@@ -101,7 +101,6 @@ if [ ! -d "${test_dir}" ]; then
   mkdir -p ${test_dir}
 fi
 if [ ! -f "${test_dir}/CMakeLists.txt" ]; then
-  touch "${test_dir}/CMakeLists.txt"
   echo "add_subdirectory(${package_name_original}/${module_name_original})" >>"${git_root}/test/CMakeLists.txt"
 fi
 
