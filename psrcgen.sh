@@ -109,10 +109,15 @@ ret=$(create_from_template "header.template" "${header_dir}/${file_name_original
 ret=$(create_from_template "source.template" "${source_dir}/${file_name_original}.cpp")
 ret=$(create_from_template "gtest.template" "${test_dir}/${file_name_original}_test.cpp")
 
+# Create gtest CMakeLists.txt
+ret=$(create_from_template "gtest_CMakeLists.txt.template" "${test_dir}/CMakeLists.txt")
+
+
 # if this git repository is under catkin workspace, generate CMakeLists.txt file for catkin build system.
 # else, create normal gtest CMakeLists.txt.
-if [ $(check_catkin) -eq 1 ]; then
-  ret=$(create_from_template "catkin_gtest_CMakeLists.txt.template" "${test_dir}/CMakeLists.txt")
-else
-  ret=$(create_from_template "gtest_CMakeLists.txt.template" "${test_dir}/CMakeLists.txt")
-fi
+
+# if [ $(check_catkin) -eq 1 ]; then
+#   ret=$(create_from_template "catkin_gtest_CMakeLists.txt.template" "${test_dir}/CMakeLists.txt")
+# else
+#   ret=$(create_from_template "gtest_CMakeLists.txt.template" "${test_dir}/CMakeLists.txt")
+# fi
